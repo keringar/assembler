@@ -1,0 +1,9 @@
+[package]
+name = "define_config"
+version = "0.1.0"
+authors = ["keringar <git@keringar.xyz>"]
+
+[dependencies]
+serde = "0.9"
+serde_derive = "0.9"
+serde_yaml = "0.6"

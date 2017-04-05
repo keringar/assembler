@@ -1,0 +1,8 @@
+[package]
+name = "assembler"
+version = "0.1.0"
+authors = ["Warren"]
+
+[dependencies]
+serde = "0.9"
+define_config = { path = "./src/define_config" }
