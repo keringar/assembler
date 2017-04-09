@@ -1,3 +1,4 @@
+use define_config;
 use define_config::{Serialize, Deserialize};
 
 use config::{LatestConfig, Upgrade};
@@ -22,12 +23,13 @@ pub fn load_config() -> LatestConfig
 
     match LatestConfig::from_str(&contents) {
         Ok(config) => config,
-        Err(_) => {
+        Err(err) => {
             drop(file);
-            panic!("{}", config);
-            // let config = LatestConfig::default();
-            // write_config(&config);
-            // config
+            let config = LatestConfig::default();
+            let mut file = get_config_file();
+            let _ = file.write_all(config.to_string().as_bytes());
+            file.sync_all().expect("Couldn't save config file");
+            config
         }
     }
 }

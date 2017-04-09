@@ -77,7 +77,8 @@ macro_rules! define_config {
     ) => {
         #[derive( Serialize, Deserialize, Debug, $attr_before $( ,$attr )* )]
         pub struct $name {
-            $( pub $field : $ty ,)+
+            $( 
+               pub $field : $ty, )+
         }
 
         impl_config_meta! {
@@ -94,6 +95,12 @@ macro_rules! define_config {
         #[derive(Serialize, Deserialize, Debug)]
         pub struct $name {
             $( pub $field : $ty ,)+
+        }
+
+        impl_field_defaults! {
+            $name {
+                $( $field, $ty, $e,)+
+            }
         }
 
         impl_config_meta! {
@@ -113,7 +120,7 @@ macro_rules! impl_config_meta {
         impl Default for $name {
             fn default() -> $name {
                 $name {
-                    $( $field: Default::default() )+
+                    $( $field: $e ,)+
                 }
             }
         }
@@ -135,29 +142,5 @@ macro_rules! impl_config_meta {
                 define_config::serde_yaml::from_str(s)
             }
         }
-
-        impl_default_meta! {
-            $( $field, $ty, $e,)+
-        }
-
     }
-}
-
-#[doc(no_inline)]
-#[macro_export]
-macro_rules! impl_default_meta {
-    ($( $field:ident, $ty:ty, $e:expr,)+) => {
-        $(impl Default for $field {
-            fn default() -> $field {
-                $e
-            }
-        })+
-    }
-}
-
-pub fn deserialize_with_default<T, D>(deserializer: D) -> Result<T, D::Error>
-    where T: Default + Deserialize,
-          D: Deserializer
-{
-    unimplemented!()
 }
