@@ -1,8 +1,16 @@
 [package]
 name = "assembler"
 version = "0.1.0"
-authors = ["Warren"]
+authors = ["Keringar <git@keringar.xyz>"]
 
 [dependencies]
-serde = "0.9"
-define_config = { path = "./src/define_config" }
+gfx = "0.14"
+gfx_device_gl = "0.13"
+glutin = "0.7"
+gfx_window_glutin = "0.14"
+specs = "0.8"
+cgmath = "0.12"
+slog = "2.0"
+slog-term = "2.0.0-4.0"
+slog-async = "2.0"
+rand = "0.3"
