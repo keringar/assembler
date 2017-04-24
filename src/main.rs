@@ -9,23 +9,32 @@ extern crate gfx_window_glutin;
 extern crate specs;
 extern crate cgmath;
 extern crate rand;
+extern crate pegasus;
 
+mod system;
 mod event;
-mod game;
-mod sys;
 mod world;
 
 fn main() {
     let root_logger = create_logger();
-    
-    // let (ev_send, ev_recv) = event::SenderHub::new();
 
+    info!(root_logger, "Setting window options");
     let window_builder = glutin::WindowBuilder::new()
         .with_title("Assembler".to_string());
     
-    info!("Creating window");
+    info!(root_logger, "Creating graphics backend");
     let (window, device, mut factory, main_color, main_depth) = 
-        gfx_window_glutin::init::<sys::render::ColorFormat, sys::render::DepthFormat>(window_builder);
+        gfx_window_glutin::init::<system::render::ColorFormat, system::render::DepthFormat>(window_builder);
+    
+    info!(root_logger, "Creating event manager");
+    let (event_send, event_recv) = event::SenderHub::new();
+    
+    // create renderer system
+    
+
+    // create world
+
+    
 }
 
 fn create_logger() -> slog::Logger {

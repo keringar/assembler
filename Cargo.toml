@@ -4,13 +4,12 @@ version = "0.1.0"
 authors = ["Keringar <git@keringar.xyz>"]
 
 [dependencies]
-gfx = "0.14"
-gfx_device_gl = "0.13"
+gfx = "0.15"
+gfx_device_gl = "0.14"
+gfx_window_glutin = "0.15"
 glutin = "0.7"
-gfx_window_glutin = "0.14"
 specs = "0.8"
-cgmath = "0.12"
+cgmath = "0.13"
 slog = "2.0"
 slog-term = "2.0.0-4.0"
 slog-async = "2.0"
-rand = "0.3"
