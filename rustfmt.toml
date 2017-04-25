@@ -1,0 +1,9 @@
+write_mode = "Overwrite"
+error_on_line_overflow = false
+
+# RFC Format
+fn_args_layout = "Block"
+array_layout = "Block"
+where_style = "Rfc"
+generics_indent = "Block"
+fn_call_style = "Block"

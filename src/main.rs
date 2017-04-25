@@ -9,11 +9,12 @@ extern crate gfx_window_glutin;
 extern crate specs;
 extern crate cgmath;
 extern crate rand;
-extern crate pegasus;
 
 mod system;
 mod event;
 mod world;
+
+pub type DeltaTime = f32,
 
 fn main() {
     let root_logger = create_logger();
@@ -28,13 +29,7 @@ fn main() {
     
     info!(root_logger, "Creating event manager");
     let (event_send, event_recv) = event::SenderHub::new();
-    
-    // create renderer system
-    
 
-    // create world
-
-    
 }
 
 fn create_logger() -> slog::Logger {

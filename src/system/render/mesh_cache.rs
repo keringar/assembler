@@ -1,6 +1,7 @@
 use gfx;
 use std::collections::HashMap;
-use super::Mesh;
+
+use render::Mesh;
 
 // Handle for indexing into MeshCache
 pub struct MeshHandle {
@@ -8,7 +9,7 @@ pub struct MeshHandle {
     index: usize,
 }
 
-impl DrawHandle {
+impl MeshHandle {
     fn new(index: usize) -> MeshHandle {
         MeshHandle {
             index: index,
@@ -16,8 +17,16 @@ impl DrawHandle {
     }
 }
 
-pub struct BundleCache {
+pub struct MeshCache {
     cache: HashMap<MeshHandle, Mesh>,
 }
 
-impl 
+impl MeshCache {
+    pub fn add_mesh(mesh: Mesh) -> MeshHandle {
+        unimplemented!()
+    }
+
+    pub fn get_slice(handle: &MeshHandle) -> Option<Mesh> {
+        unimplemented!()
+    }
+}
