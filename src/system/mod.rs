@@ -1,2 +1,2 @@
-pub mod render;
 pub mod control;
+pub mod render;

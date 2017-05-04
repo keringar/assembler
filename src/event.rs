@@ -13,14 +13,10 @@ pub struct SenderHub {
 impl SenderHub {
     pub fn new() -> (SenderHub, ReceiverHub) {
         let (control_send, control_recv) = mpsc::channel();
-        
-        let send_hub = SenderHub {
-            control: control_send,
-        };
 
-        let recv_hub = ReceiverHub {
-            control: control_recv,
-        };
+        let send_hub = SenderHub { control: control_send };
+
+        let recv_hub = ReceiverHub { control: control_recv };
 
         (send_hub, recv_hub)
     }
@@ -32,10 +28,26 @@ impl SenderHub {
         use system::control::Event;
 
         match event {
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::W)) => self.control.send( Event::MoveForward ).unwrap(),
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::S)) => self.control.send( Event::MoveBackward ).unwrap(),
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::D)) => self.control.send( Event::MoveRight ).unwrap(),
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::A)) => self.control.send( Event::MoveLeft ).unwrap(),
+            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::W)) => {
+                self.control
+                    .send(Event::MoveForward)
+                    .expect("Unable to send input")
+            }
+            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::S)) => {
+                self.control
+                    .send(Event::MoveBackward)
+                    .expect("Unable to send input")
+            }
+            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::D)) => {
+                self.control
+                    .send(Event::MoveRight)
+                    .expect("Unable to send input")
+            }
+            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::A)) => {
+                self.control
+                    .send(Event::MoveLeft)
+                    .expect("Unable to send input")
+            }
             _ => (),
         }
     }

@@ -1,5 +1,4 @@
 write_mode = "Overwrite"
-error_on_line_overflow = false
 
 # RFC Format
 fn_args_layout = "Block"

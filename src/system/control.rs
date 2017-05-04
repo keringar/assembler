@@ -1,5 +1,8 @@
-use cgmath::Vector3;
+use std::sync::mpsc;
+use cgmath::{Vector3, Zero};
+
 use specs;
+use types::*;
 use world;
 
 pub enum Event {
@@ -10,46 +13,47 @@ pub enum Event {
 }
 
 pub struct System {
-    input: std::sync::mpsc::Receiver<Event>,
-    move_speed: Vector3<f32>,
+    input_chan: mpsc::Receiver<Event>,
+    accel_dir: Vector3<f32>,
 }
 
 impl System {
-    pub fn new(chan: std::sync::mpsc::Receiver<Event>) -> System {
+    pub fn new(input_chan: mpsc::Receiver<Event>) -> System {
         System {
-            input: chan,
-            accel: Vector3::new(0.0, 0.0, 0.0),
+            input_chan,
+            accel_dir: Vector3::zero(),
         }
     }
 
     fn check_input(&mut self) {
         loop {
-            match self.input.try_recv() {
-                Ok(event) => match event {
-                    Event::MoveForward  => move_speed + move_speed.unit_y(),
-                    Event::MoveBackward => move_speed - move_speed.unit_y(),
-                    Event::MoveRight    => move_speed + move_speed.unit_x(),
-                    Event::MoveLeft     => move_speed - move_speed.unit_x(),
-                },
-                Err(_) => return, 
+            match self.input_chan.try_recv() {
+                Ok(event) => {
+                    match event {
+                        Event::MoveForward => self.accel_dir = Vector3::unit_y(),
+                        Event::MoveBackward => self.accel_dir = -Vector3::unit_y(),
+                        Event::MoveRight => self.accel_dir = Vector3::unit_x(),
+                        Event::MoveLeft => self.accel_dir = -Vector3::unit_x(),
+                    }
+                }
+                Err(_) => return,
             }
         }
     }
 }
 
-impl specs::System<super::DeltaTime> for System {
-    fn run(&mut self, arg: specs::RunArg, time: super::DeltaTime) {
+impl specs::System<DeltaTime> for System {
+    fn run(&mut self, arg: specs::RunArg, time: DeltaTime) {
         use specs::Join;
 
         self.check_input();
 
-        let (mut control, mut transform) = arg.fetch(
-            |w| (w.read::<world::Control>(), w.read::<world::Transform>())
-        );
+        let (mut control, mut transform) =
+            arg.fetch(|w| (w.write::<world::Control>(), w.write::<world::Transform>()),);
 
-        for (control, transform) in (&control, &mut transform).iter() {
-            let velocity = time * control.speed * self.accel;
-            transform.pos = transform.pos + velocity;
+        for (control, transform) in (&mut control, &mut transform).join() {
+            control.velocity = control.velocity + (time * self.accel_dir);
+            transform.pos = transform.pos + control.velocity;
         }
     }
 }
