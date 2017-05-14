@@ -2,7 +2,7 @@ use std::sync::mpsc;
 use cgmath::{Vector3, Zero};
 
 use specs;
-use types::*;
+use util::types::*;
 use world;
 
 pub enum Event {

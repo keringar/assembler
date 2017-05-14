@@ -1,54 +1,94 @@
-use std::sync::mpsc;
 use glutin;
-use system;
+use std::ops::Deref;
+use bus::{Bus, BusReader, self};
 
-pub struct ReceiverHub {
-    pub control: mpsc::Receiver<system::control::Event>,
+#[derive(Debug, Copy, Clone)]
+pub enum Event {
+    MoveForward,
+    MoveLeft,
+    MoveRight,
+    MoveBackward,
+    Quit,
+    NotHandled,
 }
 
-pub struct SenderHub {
-    control: mpsc::Sender<system::control::Event>,
+pub struct EventManager {
+    event_loop: glutin::EventsLoop,
+    bus: BusWrapper,
 }
 
-impl SenderHub {
-    pub fn new() -> (SenderHub, ReceiverHub) {
-        let (control_send, control_recv) = mpsc::channel();
+// Required to get around partial borrows
+struct BusWrapper {
+    pub bus: Bus<Event>,
+}
 
-        let send_hub = SenderHub { control: control_send };
+impl EventManager {
+    pub fn new() -> EventManager {
+        // TODO: Profile to find optimal event queue size
+        // for now, just set it at 100 bytes. Each event
+        // is one byte.
+        let bus = BusWrapper {  
+            bus: Bus::new(100),
+        };
 
-        let recv_hub = ReceiverHub { control: control_recv };
-
-        (send_hub, recv_hub)
+        EventManager {
+            event_loop: glutin::EventsLoop::new(),
+            bus,
+        }
     }
 
-    pub fn process_glutin(&self, event: glutin::Event) {
-        use glutin::Event::KeyboardInput;
-        use glutin::{ElementState, VirtualKeyCode};
+    pub fn poll_events(&mut self) {
+        let bus = &mut self.bus;
 
-        use system::control::Event;
+        self.event_loop
+            .poll_events(
+                |event| match event {
+                    // Contains event and the windowID that created it.
+                    // WindowID is ignored as we only have one window
+                    glutin::Event::WindowEvent { event, .. } => {
+                        match event {
+                            glutin::WindowEvent::Closed => bus.bus.broadcast(Event::Quit),
+                            glutin::WindowEvent::KeyboardInput(_, _, Some(keycode), _) => {
+                                let event = map_key(keycode);
+                                bus.bus.broadcast(event);
+                            }
+                            _ => (),
+                        }
+                    }
+                },
+            );
+    }
 
-        match event {
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::W)) => {
-                self.control
-                    .send(Event::MoveForward)
-                    .expect("Unable to send input")
-            }
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::S)) => {
-                self.control
-                    .send(Event::MoveBackward)
-                    .expect("Unable to send input")
-            }
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::D)) => {
-                self.control
-                    .send(Event::MoveRight)
-                    .expect("Unable to send input")
-            }
-            KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::A)) => {
-                self.control
-                    .send(Event::MoveLeft)
-                    .expect("Unable to send input")
-            }
-            _ => (),
-        }
+    // Example:
+    //  let mut receiver = events.add_listener();
+    //  std::thread::spawn(move || {
+    //      loop {
+    //          let event = receiver.recv().unwrap();
+    //  
+    //          match event {
+    //              _ => (),
+    //          }
+    //      }
+    //  });
+    pub fn add_listener(&mut self) -> BusReader<Event> {
+        self.bus.bus.add_rx()
+    }
+}
+
+impl Deref for EventManager {
+    type Target = glutin::EventsLoop;
+
+    fn deref(&self) -> &glutin::EventsLoop {
+        &self.event_loop
+    }
+}
+
+fn map_key(keycode: glutin::VirtualKeyCode) -> Event {
+    match keycode {
+        glutin::VirtualKeyCode::W => Event::MoveForward,
+        glutin::VirtualKeyCode::A => Event::MoveLeft,
+        glutin::VirtualKeyCode::S => Event::MoveBackward,
+        glutin::VirtualKeyCode::D => Event::MoveRight,
+        _ => Event::NotHandled,
     }
 }
