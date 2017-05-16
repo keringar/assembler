@@ -1,24 +1,16 @@
-use std::sync::mpsc;
 use cgmath::{Vector3, Zero};
-
+use event::{Event, EventReceiver};
 use specs;
 use util::types::*;
 use world;
 
-pub enum Event {
-    MoveForward,
-    MoveBackward,
-    MoveRight,
-    MoveLeft,
-}
-
 pub struct System {
-    input_chan: mpsc::Receiver<Event>,
+    input_chan: EventReceiver,
     accel_dir: Vector3<f32>,
 }
 
 impl System {
-    pub fn new(input_chan: mpsc::Receiver<Event>) -> System {
+    pub fn new(input_chan: EventReceiver) -> System {
         System {
             input_chan,
             accel_dir: Vector3::zero(),
@@ -34,9 +26,10 @@ impl System {
                         Event::MoveBackward => self.accel_dir = -Vector3::unit_y(),
                         Event::MoveRight => self.accel_dir = Vector3::unit_x(),
                         Event::MoveLeft => self.accel_dir = -Vector3::unit_x(),
+                        _ => (),
                     }
                 }
-                Err(_) => return,
+                Err(_) => continue,
             }
         }
     }

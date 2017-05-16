@@ -17,20 +17,23 @@ mod window;
 mod world;
 mod util;
 
+use util::logger::{self, LogType};
+
 fn main() {
-    let root_logger = util::logger::create_logger();
+    let root_logger = logger::create_logger(LogType::Terminal);
 
     info!(root_logger, "Creating event manager");
-    let mut events = event::EventManager::new();
+    let mut event_source = event::EventManager::new();
 
     info!(root_logger, "Creating window");
     let (mut window, mut factory) = window::WindowBuilder::new()
         .with_title("Assembler")
-        .build(&events);
+        .build(&event_source);
 
     info!(root_logger, "Creating encoder channels");
     let (device_chan, render_chan) = util::mpsc_duplex::DuplexChannel::new();
 
+    // Double buffer encoders
     for _ in 0..2 {
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
         device_chan
@@ -40,11 +43,11 @@ fn main() {
 
     // game::new(game_chan, event_recv, factory, render_target)
 
+    // Replace with check for game.is_running()
     'main: loop {
-        // Replace with check for game.is_running()
         // Translates windows events and turns them into game events
-        // which are then sent to the game thread
-        events.poll_events();
+        // which are then sent to all listeners
+        event_source.poll_events();
 
         // Temporary because no render system currently exists
         let encoder = render_chan.recv().unwrap();

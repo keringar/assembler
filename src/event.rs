@@ -1,6 +1,7 @@
+use bus::{Bus, BusReader};
 use glutin;
 use std::ops::Deref;
-use bus::{Bus, BusReader, self};
+pub use std::sync::mpsc::{RecvError, TryRecvError};
 
 #[derive(Debug, Copy, Clone)]
 pub enum Event {
@@ -12,14 +13,19 @@ pub enum Event {
     NotHandled,
 }
 
+fn map_key(keycode: glutin::VirtualKeyCode) -> Event {
+    match keycode {
+        glutin::VirtualKeyCode::W => Event::MoveForward,
+        glutin::VirtualKeyCode::A => Event::MoveLeft,
+        glutin::VirtualKeyCode::S => Event::MoveBackward,
+        glutin::VirtualKeyCode::D => Event::MoveRight,
+        _ => Event::NotHandled,
+    }
+}
+
 pub struct EventManager {
     event_loop: glutin::EventsLoop,
     bus: BusWrapper,
-}
-
-// Required to get around partial borrows
-struct BusWrapper {
-    pub bus: Bus<Event>,
 }
 
 impl EventManager {
@@ -27,14 +33,14 @@ impl EventManager {
         // TODO: Profile to find optimal event queue size
         // for now, just set it at 100 bytes. Each event
         // is one byte.
-        let bus = BusWrapper {  
-            bus: Bus::new(100),
-        };
+        let bus = BusWrapper { bus: Bus::new(100) };
 
-        EventManager {
+        let manager = EventManager {
             event_loop: glutin::EventsLoop::new(),
             bus,
-        }
+        };
+
+        manager
     }
 
     pub fn poll_events(&mut self) {
@@ -59,19 +65,8 @@ impl EventManager {
             );
     }
 
-    // Example:
-    //  let mut receiver = events.add_listener();
-    //  std::thread::spawn(move || {
-    //      loop {
-    //          let event = receiver.recv().unwrap();
-    //  
-    //          match event {
-    //              _ => (),
-    //          }
-    //      }
-    //  });
-    pub fn add_listener(&mut self) -> BusReader<Event> {
-        self.bus.bus.add_rx()
+    pub fn add_receiver(&mut self) -> EventReceiver {
+        EventReceiver { bus_receiver: self.bus.bus.add_rx() }
     }
 }
 
@@ -83,12 +78,24 @@ impl Deref for EventManager {
     }
 }
 
-fn map_key(keycode: glutin::VirtualKeyCode) -> Event {
-    match keycode {
-        glutin::VirtualKeyCode::W => Event::MoveForward,
-        glutin::VirtualKeyCode::A => Event::MoveLeft,
-        glutin::VirtualKeyCode::S => Event::MoveBackward,
-        glutin::VirtualKeyCode::D => Event::MoveRight,
-        _ => Event::NotHandled,
+// No need to unnecessarily export implementation details
+pub struct EventReceiver {
+    bus_receiver: BusReader<Event>,
+}
+
+impl EventReceiver {
+    // Bus should never drop before listeners, so no danger of getting a recv error
+    pub fn recv(&mut self) -> Result<Event, RecvError> {
+        self.bus_receiver.recv()
     }
+
+    // ^^
+    pub fn try_recv(&mut self) -> Result<Event, TryRecvError> {
+        self.bus_receiver.try_recv()
+    }
+}
+
+// Required to get around partial borrows
+struct BusWrapper {
+    pub bus: Bus<Event>,
 }
