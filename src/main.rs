@@ -12,26 +12,32 @@ extern crate slog_term;
 extern crate specs;
 
 mod event;
+mod game;
 mod system;
 mod window;
 mod world;
 mod util;
 
 use util::logger::{self, LogType};
+use util::types::{ColorFormat, DepthFormat};
 
 fn main() {
     let root_logger = logger::create_logger(LogType::Terminal);
 
     info!(root_logger, "Creating event manager");
-    let mut event_source = event::EventManager::new();
+    // render_receiver is only created so that when the window is created,
+    // it can immediately send over it's dimensions
+    let (mut event_source, render_receiver) = event::EventManager::new();
 
     info!(root_logger, "Creating window");
-    let (mut window, mut factory) = window::WindowBuilder::new()
+    let mut window = window::WindowBuilder::new()
         .with_title("Assembler")
-        .build(&event_source);
+        .build(&mut event_source);
+
+    let (_, mut factory, rtv, dsv) = gfx_window_glutin::init_existing::<ColorFormat, DepthFormat>(&window,);
 
     info!(root_logger, "Creating encoder channels");
-    let (device_chan, render_chan) = util::mpsc_duplex::DuplexChannel::new();
+    let (device_chan, render_chan) = util::EncoderChannel::new();
 
     // Double buffer encoders
     for _ in 0..2 {
@@ -41,24 +47,26 @@ fn main() {
             .expect("Unable to send encoder to game channel");
     }
 
-    // game::new(game_chan, event_recv, factory, render_target)
+    let mut game = game::Game::new(
+        &mut event_source,
+        render_receiver,
+        render_chan,
+        &mut factory,
+    );
 
-    // Replace with check for game.is_running()
-    'main: loop {
+    while game.is_running() {
         // Translates windows events and turns them into game events
         // which are then sent to all listeners
         event_source.poll_events();
 
-        // Temporary because no render system currently exists
-        let encoder = render_chan.recv().unwrap();
-        render_chan.send(encoder).unwrap();
+        game.update();
 
         // The following code implements double buffering of encoders.
         // Two encoders are created, one is sent to the main thread
         // while the other lives on the render thread.
         let mut encoder = device_chan
             .recv()
-            .expect("Unable to receiver encoder from render system");
+            .expect("Unable to receive encoder from render system");
 
         encoder.flush(&mut window.device);
         window.swap_buffers();
