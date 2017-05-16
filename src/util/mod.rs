@@ -1,3 +1,5 @@
 pub mod logger;
-pub mod mpsc_duplex;
+mod encoder_channel;
 pub mod types;
+
+pub use self::encoder_channel::EncoderChannel;

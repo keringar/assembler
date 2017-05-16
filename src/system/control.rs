@@ -41,12 +41,11 @@ impl specs::System<DeltaTime> for System {
 
         self.check_input();
 
-        let (mut control, mut transform) =
-            arg.fetch(|w| (w.write::<world::Control>(), w.write::<world::Transform>()),);
+        let (mut inertia, control) =
+            arg.fetch(|w| (w.write::<world::Inertial>(), w.read::<world::Control>()),);
 
-        for (control, transform) in (&mut control, &mut transform).join() {
-            control.velocity = control.velocity + (time * self.accel_dir);
-            transform.pos = transform.pos + control.velocity;
+        for (i, c) in (&mut inertia, &control).join() {
+            i.velocity = i.velocity + (time * self.accel_dir);
         }
     }
 }

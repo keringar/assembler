@@ -1,6 +1,7 @@
 use bus::{Bus, BusReader};
 use glutin;
 use std::ops::Deref;
+
 pub use std::sync::mpsc::{RecvError, TryRecvError};
 
 #[derive(Debug, Copy, Clone)]
@@ -10,6 +11,7 @@ pub enum Event {
     MoveRight,
     MoveBackward,
     Quit,
+    Resize(u32, u32),
     NotHandled,
 }
 
@@ -29,18 +31,20 @@ pub struct EventManager {
 }
 
 impl EventManager {
-    pub fn new() -> EventManager {
+    pub fn new() -> (EventManager, EventReceiver) {
         // TODO: Profile to find optimal event queue size
         // for now, just set it at 100 bytes. Each event
         // is one byte.
         let bus = BusWrapper { bus: Bus::new(100) };
 
-        let manager = EventManager {
+        let mut manager = EventManager {
             event_loop: glutin::EventsLoop::new(),
             bus,
         };
 
-        manager
+        let receiver = manager.add_receiver();
+
+        (manager, receiver)
     }
 
     pub fn poll_events(&mut self) {
@@ -63,6 +67,10 @@ impl EventManager {
                     }
                 },
             );
+    }
+
+    pub fn dispatch(&mut self, event: Event) {
+        self.bus.bus.broadcast(event)
     }
 
     pub fn add_receiver(&mut self) -> EventReceiver {
