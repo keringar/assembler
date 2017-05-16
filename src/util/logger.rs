@@ -1,4 +1,4 @@
-use slog::{Drain, self};
+use slog::{self, Drain};
 use slog_term;
 use slog_async;
 
@@ -25,8 +25,8 @@ pub fn create_logger(log_type: LogType) -> slog::Logger {
         LogType::TerminalAndFile => create_file_and_terminal_drain(),
     };
 
-    slog::Logger::root(Arc::new(drain), o!("version" => env!("CARGO_PKG_VERSION")))
-} 
+    slog::Logger::root(Arc::new(drain), o!("version" => "0.1"))
+}
 
 fn create_terminal_drain() -> DrainType {
     //Create basic terminal drain
@@ -34,7 +34,7 @@ fn create_terminal_drain() -> DrainType {
     let term_drain = slog_term::CompactFormat::new(term_decorator)
         .build()
         .fuse();
-    
+
     //Make it async
     slog_async::Async::new(term_drain).build().fuse()
 }
