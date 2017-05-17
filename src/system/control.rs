@@ -29,7 +29,7 @@ impl System {
                         _ => (),
                     }
                 }
-                Err(_) => continue,
+                Err(_) => break,
             }
         }
     }
@@ -40,7 +40,7 @@ impl specs::System<DeltaTime> for System {
         use specs::Join;
 
         self.check_input();
-println!("test");
+
         let (mut inertia, control) =
             arg.fetch(|w| (w.write::<world::Inertial>(), w.read::<world::Control>()),);
 
