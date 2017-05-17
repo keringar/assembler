@@ -40,12 +40,12 @@ impl specs::System<DeltaTime> for System {
         use specs::Join;
 
         self.check_input();
-
+println!("test");
         let (mut inertia, control) =
             arg.fetch(|w| (w.write::<world::Inertial>(), w.read::<world::Control>()),);
 
         for (i, c) in (&mut inertia, &control).join() {
-            i.velocity = i.velocity + (time * self.accel_dir);
+            i.velocity = i.velocity + (time * self.accel_dir * c.acceleration);
         }
     }
 }

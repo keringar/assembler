@@ -9,24 +9,24 @@ pub struct Transform {
     pub scale: f32,
 }
 
-impl specs::Component for Transform {
-    type Storage = specs::VecStorage<Transform>;
-}
-
 // Physics allows entities to move around
 #[derive(Clone, Debug)]
 pub struct Inertial {
     pub velocity: Vector3<f32>,
 }
 
-impl specs::Component for Inertial {
-    type Storage = specs::VecStorage<Inertial>;
-}
-
 // Allows entities with this component to be controlled though events
 #[derive(Clone, Debug)]
 pub struct Control {
     pub acceleration: f32,
+}
+
+impl specs::Component for Transform {
+    type Storage = specs::VecStorage<Transform>;
+}
+
+impl specs::Component for Inertial {
+    type Storage = specs::VecStorage<Inertial>;
 }
 
 impl specs::Component for Control {

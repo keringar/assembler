@@ -1,4 +1,4 @@
-use std::sync::mpsc::{Sender, SendError, Receiver, RecvError, channel};
+use std::sync::mpsc::{Sender, SendError, Receiver, RecvError, TryRecvError, channel};
 use util::types::EncoderType;
 
 pub struct EncoderChannel {
@@ -30,5 +30,9 @@ impl EncoderChannel {
 
     pub fn recv(&self) -> Result<EncoderType, RecvError> {
         self.receiver.recv()
+    }
+
+    pub fn try_recv(&self) -> Result<EncoderType, TryRecvError> {
+        self.receiver.try_recv()
     }
 }

@@ -64,15 +64,15 @@ fn main() {
         // The following code implements double buffering of encoders.
         // Two encoders are created, one is sent to the main thread
         // while the other lives on the render thread.
-        let mut encoder = device_chan
-            .recv()
-            .expect("Unable to receive encoder from render system");
-
-        encoder.flush(&mut window.device);
-        window.swap_buffers();
-
-        device_chan
-            .send(encoder)
-            .expect("Unable to send encoder back to render system");
+        match device_chan.try_recv() {
+            Ok(mut encoder) => {
+                encoder.flush(&mut window.device);
+                window.swap_buffers();
+                device_chan
+                    .send(encoder)
+                    .expect("Unable to send encoder back to render system");
+            }
+            Err(_) => continue,
+        }
     }
 }
