@@ -73,7 +73,7 @@ impl Game {
                     _ => (),
                 }
             }
-            Err(_) => return,
+            Err(_) => (),
         }
 
         let elapsed = self.last_time.elapsed();
