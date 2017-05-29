@@ -19,7 +19,7 @@ impl System {
 
     fn check_input(&mut self) {
         loop {
-            match self.input_chan.recv() {
+            match self.input_chan.try_recv() {
                 Ok(event) => {
                     match event {
                         Event::MoveForward => self.accel_dir = Vector3::unit_y(),
@@ -38,9 +38,9 @@ impl System {
 impl specs::System<DeltaTime> for System {
     fn run(&mut self, arg: specs::RunArg, time: DeltaTime) {
         use specs::Join;
-        println!("Before");
+
         self.check_input();
-        println!("After");
+
         let (mut inertia, control) =
             arg.fetch(|w| (w.write::<world::Inertial>(), w.read::<world::Control>()),);
 

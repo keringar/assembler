@@ -61,7 +61,8 @@ impl EventManager {
                             glutin::WindowEvent::KeyboardInput(_, _, Some(keycode), _) => {
                                 let event = map_key(keycode);
                                 bus.bus.broadcast(event);
-                            }
+                            },
+                            glutin::WindowEvent::Resized(x, y) => bus.bus.broadcast(Event::Resize(x, y)),
                             _ => (),
                         }
                     }
@@ -69,6 +70,7 @@ impl EventManager {
             );
     }
 
+    #[allow(dead_code)]
     pub fn dispatch(&mut self, event: Event) {
         self.bus.bus.broadcast(event)
     }
@@ -93,6 +95,7 @@ pub struct EventReceiver {
 
 impl EventReceiver {
     // Bus should never drop before listeners, so no danger of getting a recv error
+    #[allow(dead_code)]
     pub fn recv(&mut self) -> Result<Event, RecvError> {
         self.bus_receiver.recv()
     }

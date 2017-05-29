@@ -21,6 +21,16 @@ pub struct Control {
     pub acceleration: f32,
 }
 
+#[derive(Clone, Debug)]
+pub struct Renderable {
+    //Renderable
+}
+
+#[derive(Clone, Debug)]
+pub struct Chunk {
+    //Render chunk
+}
+
 impl specs::Component for Transform {
     type Storage = specs::VecStorage<Transform>;
 }
@@ -31,4 +41,12 @@ impl specs::Component for Inertial {
 
 impl specs::Component for Control {
     type Storage = specs::HashMapStorage<Control>;
+}
+
+impl specs::Component for Renderable {
+    type Storage = specs::VecStorage<Renderable>;
+}
+
+impl specs::Component for Chunk {
+    type Storage = specs::HashMapStorage<Chunk>;
 }
