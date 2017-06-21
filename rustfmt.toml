@@ -1,8 +1,6 @@
+normalize_comments = true
+reorder_imports = true
+reorder_imports_in_group = true
+reorder_imported_names = true
+wrap_match_arms = false
 write_mode = "Overwrite"
-
-# RFC Format
-fn_args_layout = "Block"
-array_layout = "Block"
-where_style = "Rfc"
-generics_indent = "Block"
-fn_call_style = "Block"
